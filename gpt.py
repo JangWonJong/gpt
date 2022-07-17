@@ -8,6 +8,17 @@ import urllib.request
 from torch.utils.data import DataLoader, Dataset
 from transformers import PreTrainedTokenizerFast
 import urllib.request
+import numpy as np
+import pandas as pd
+import torch
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.core.lightning import LightningModule
+from torch.utils.data import DataLoader, Dataset
+from transformers.optimization import AdamW, get_cosine_schedule_with_warmup
+from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel
+import re
+from tqdm import tqdm
 
 urllib.request.urlretrieve(
     "https://raw.githubusercontent.com/songys/Chatbot_data/master/ChatbotData.csv",
@@ -16,7 +27,7 @@ urllib.request.urlretrieve(
 Chatbot_Data = pd.read_csv("ChatBotData.csv")
 
 # Test 용으로 300개 데이터만 처리한다.
-Chatbot_Data = Chatbot_Data[:300]
+#Chatbot_Data = Chatbot_Data[:300]
 Chatbot_Data.head()
 BOS = "</s>"
 EOS = "</s>"
@@ -142,26 +153,6 @@ generated = tokenizer.decode(gen_ids[0,:].tolist())
 print(generated)
 
 
-import numpy as np
-import pandas as pd
-import torch
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.core.lightning import LightningModule
-from torch.utils.data import DataLoader, Dataset
-from transformers.optimization import AdamW, get_cosine_schedule_with_warmup
-from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel
-import re
-from tqdm import tqdm
-
-Q_TKN = "<usr>"
-A_TKN = "<sys>"
-BOS = '</s>'
-EOS = '</s>'
-MASK = '<unused0>'
-SENT = '<unused1>'
-PAD = '<pad>'
-
 koGPT2_TOKENIZER = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
             bos_token=BOS, eos_token=EOS, unk_token='<unk>',
             pad_token=PAD, mask_token=MASK) 
@@ -175,7 +166,7 @@ urllib.request.urlretrieve(
 )
 Chatbot_Data = pd.read_csv("ChatBotData.csv")
 # Test 용으로 300개 데이터만 처리한다.
-Chatbot_Data = Chatbot_Data[:300]
+#Chatbot_Data = Chatbot_Data[:300]
 Chatbot_Data.head()
 
 USE_CUDA = torch.cuda.is_available()
@@ -194,6 +185,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 epoch = 10
 Sneg = -1e18
 
+    
 print ("start")
 for epoch in range(epoch):
     for batch_idx, samples in enumerate(tqdm(train_dataloader)):
@@ -211,6 +203,7 @@ for epoch in range(epoch):
         optimizer.step()
 print ("end")
 
+
 with torch.no_grad():
     while 1:
         q = input("user > ").strip()
@@ -226,6 +219,7 @@ with torch.no_grad():
                 break
             a += gen.replace("▁", " ")
         print("Chatbot > {}".format(a.strip()))
+
 
 if __name__ == '__main__':
     torch.no_grad()
