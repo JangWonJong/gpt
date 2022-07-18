@@ -31,7 +31,7 @@ urllib.request.urlretrieve(
 Chatbot_Data = pd.read_csv('./data/ChatBotData.csv')
 
 # Test 용으로 300개 데이터만 처리한다.
-Chatbot_Data = Chatbot_Data[:300]
+#Chatbot_Data = Chatbot_Data[:300]
 Chatbot_Data.head()
 
 Q_TKN = "<usr>"
@@ -164,12 +164,16 @@ learning_rate = 3e-5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epoch = 2
+epoch = 10
 Sneg = -1e18
 
     
 print ("start")
 for epoch in range(epoch):
+    train_acc = 0.0
+    test_acc = 0.0    
+    model.train()
+    log_interval = 200
     for batch_idx, samples in enumerate(tqdm(train_dataloader)):
         optimizer.zero_grad()
         token_ids, mask, label = samples
@@ -183,11 +187,12 @@ for epoch in range(epoch):
         avg_loss.backward()
         # 학습 끝
         optimizer.step()
-    if epoch == 0 or (epoch + 1) % 100 == 0:
-        print(f'loss = {avg_loss.detach().cpu().numpy()} ')
-           
+        if batch_idx % log_interval == 0:
+            print("epoch {} batch_idx {} loss {}".format(epoch+1, batch_idx+1, avg_loss))
+                 
 print ("end")
 
+#모델 저장
 PATH = './save/chatbot.pt'
 torch.save(model, PATH)
 

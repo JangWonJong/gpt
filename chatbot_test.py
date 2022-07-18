@@ -1,27 +1,9 @@
-import math
-import numpy as np
-import pandas as pd
-import random
-import re
 import torch
-import urllib.request
-from torch.utils.data import DataLoader, Dataset
 from transformers import PreTrainedTokenizerFast
-import urllib.request
-import numpy as np
-import pandas as pd
-import torch
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.core.lightning import LightningModule
-from torch.utils.data import DataLoader, Dataset
-from transformers.optimization import AdamW, get_cosine_schedule_with_warmup
 from transformers import PreTrainedTokenizerFast, GPT2LMHeadModel
-import re
-from tqdm import tqdm
-import torch
 from transformers import GPT2LMHeadModel
 from transformers import PreTrainedTokenizerFast
+
 
 Q_TKN = "<usr>"
 A_TKN = "<sys>"
