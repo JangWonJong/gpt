@@ -23,11 +23,12 @@ import torch
 from transformers import GPT2LMHeadModel
 from transformers import PreTrainedTokenizerFast
 
+'''
 urllib.request.urlretrieve(
     "https://raw.githubusercontent.com/songys/Chatbot_data/master/ChatbotData.csv",
     filename="ChatBotData.csv",
-)
-Chatbot_Data = pd.read_csv("ChatBotData.csv")
+)'''
+Chatbot_Data = pd.read_csv('./data/ChatBotData.csv')
 
 # Test 용으로 300개 데이터만 처리한다.
 Chatbot_Data = Chatbot_Data[:300]
@@ -42,7 +43,11 @@ SENT = '<unused1>'
 PAD = '<pad>'
 
 # 허깅페이스 transformers 에 등록된 사전 학습된 koGTP2 토크나이저를 가져온다.
-koGPT2_TOKENIZER = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2", bos_token=BOS, eos_token=EOS, unk_token="<unk>", pad_token=PAD, mask_token=MASK,)
+#koGPT2_TOKENIZER = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2", bos_token=BOS, eos_token=EOS, unk_token="<unk>", pad_token=PAD, mask_token=MASK,)
+
+tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
+         bos_token=BOS, eos_token=EOS, unk_token='<unk>',  pad_token=PAD, mask_token=MASK) 
+model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
 
 class ChatbotDataset(Dataset):
     def __init__(self, chats, max_len=40):  # 데이터셋의 전처리를 해주는 부분
@@ -53,7 +58,7 @@ class ChatbotDataset(Dataset):
         self.sent_token = SENT
         self.eos = EOS
         self.mask = MASK
-        self.tokenizer = koGPT2_TOKENIZER
+        self.tokenizer = tokenizer
 
     def __len__(self):  # chatbotdata 의 길이를 리턴한다.
         return len(self._data)
@@ -131,13 +136,9 @@ for batch_idx, samples in enumerate(tqdm(train_dataloader)):
     print("label =====> ", label)'''
 print("end")
 
-
-tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2", bos_token='</s>', eos_token='</s>', unk_token='<unk>', pad_token='<pad>', mask_token='<mask>') 
 tokenizer.tokenize("안녕하세요. 한국어 GPT-2 입니다.😤:)l^o")
 
-model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
-
-text = '근육이 커지기 위해서는'
+'''text = '근육이 커지기 위해서는'
 input_ids = tokenizer.encode(text)
 gen_ids = model.generate(torch.tensor([input_ids]),
                            max_length=128,
@@ -147,13 +148,7 @@ gen_ids = model.generate(torch.tensor([input_ids]),
                            bos_token_id=tokenizer.bos_token_id,
                            use_cache=True)
 generated = tokenizer.decode(gen_ids[0,:].tolist())
-#print(generated)
-
-
-koGPT2_TOKENIZER = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
-            bos_token=BOS, eos_token=EOS, unk_token='<unk>',
-            pad_token=PAD, mask_token=MASK) 
-model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2')
+print(generated)'''
 
 
 USE_CUDA = torch.cuda.is_available()
@@ -169,7 +164,7 @@ learning_rate = 3e-5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epoch = 1
+epoch = 2
 Sneg = -1e18
 
     
@@ -188,10 +183,13 @@ for epoch in range(epoch):
         avg_loss.backward()
         # 학습 끝
         optimizer.step()
+    if epoch == 0 or (epoch + 1) % 100 == 0:
+        print(f'loss = {avg_loss.detach().cpu().numpy()} ')
+           
 print ("end")
 
-
-torch.save(model.state_dict(), './save/chatbot.pt')
+PATH = './save/chatbot.pt'
+torch.save(model, PATH)
 
 
 with torch.no_grad():
@@ -201,10 +199,10 @@ with torch.no_grad():
             break
         a = ""
         while 1:
-            input_ids = torch.LongTensor(koGPT2_TOKENIZER.encode(Q_TKN + q + SENT + A_TKN + a)).unsqueeze(dim=0)
+            input_ids = torch.LongTensor(tokenizer.encode(Q_TKN + q + SENT + A_TKN + a)).unsqueeze(dim=0)
             pred = model(input_ids)
             pred = pred.logits
-            gen = koGPT2_TOKENIZER.convert_ids_to_tokens(torch.argmax(pred, dim=-1).squeeze().numpy().tolist())[-1]
+            gen = tokenizer.convert_ids_to_tokens(torch.argmax(pred, dim=-1).squeeze().numpy().tolist())[-1]
             if gen == EOS:
                 break
             a += gen.replace("▁", " ")
