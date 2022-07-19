@@ -31,8 +31,8 @@ urllib.request.urlretrieve(
 Chatbot_Data = pd.read_csv('./data/ChatBotData.csv')
 
 # Test 용으로 300개 데이터만 처리한다.
-#Chatbot_Data = Chatbot_Data[:300]
-Chatbot_Data.head()
+Chatbot_Data = Chatbot_Data[:300]
+#Chatbot_Data.head()
 
 Q_TKN = "<usr>"
 A_TKN = "<sys>"
@@ -164,7 +164,7 @@ learning_rate = 3e-5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epoch = 10
+epoch = 2
 Sneg = -1e18
 
     
@@ -193,7 +193,7 @@ for epoch in range(epoch):
 print ("end")
 
 #모델 저장
-PATH = './save/chatbot.pt'
+PATH = './save/chatbot_v1.pt'
 torch.save(model, PATH)
 
 
@@ -211,7 +211,7 @@ with torch.no_grad():
             if gen == EOS:
                 break
             a += gen.replace("▁", " ")
-        print("Chatbot > {}".format(a.strip()))
+        print("mibot > {}".format(a.strip()))
 
 
 if __name__ == '__main__':

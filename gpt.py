@@ -23,11 +23,11 @@ import torch
 from transformers import GPT2LMHeadModel
 from transformers import PreTrainedTokenizerFast
 
-urllib.request.urlretrieve(
+'''urllib.request.urlretrieve(
     "https://raw.githubusercontent.com/songys/Chatbot_data/master/ChatbotData.csv",
-    filename="ChatBotData.csv",
-)
-Chatbot_Data = pd.read_csv("ChatBotData.csv")
+    filename="ChatBotData.csv",)'''
+    
+Chatbot_Data = pd.read_csv("./data/ChatBotData.csv")
 
 # Test 용으로 300개 데이터만 처리한다.
 Chatbot_Data = Chatbot_Data[:300]
@@ -191,7 +191,7 @@ for epoch in range(epoch):
 print ("end")
 
 
-torch.save(model.state_dict(), './save/chatbot.pt')
+torch.save(model.state_dict(), './save/chatbot_v1.pt')
 
 
 with torch.no_grad():
