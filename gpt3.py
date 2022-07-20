@@ -2,7 +2,6 @@ import math
 import numpy as np
 import pandas as pd
 import random
-import re
 import torch
 import urllib.request
 from torch.utils.data import DataLoader, Dataset
@@ -54,6 +53,7 @@ tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
 PATH = './save/chatbot_v3.pt'
 model = torch.load(PATH)
 
+# 챗봇 데이터를 처리하는 클래스를 만든다.
 class ChatbotDataset(Dataset):
     def __init__(self, chats, max_len=40):  # 데이터셋의 전처리를 해주는 부분
         self._data = chats
@@ -156,11 +156,6 @@ generated = tokenizer.decode(gen_ids[0,:].tolist())
 print(generated)'''
 
 
-
-#train_set = ChatbotDataset(Chatbot_Data, max_len=40)
-#윈도우 환경에서 num_workers 는 무조건 0으로 지정, 리눅스에서는 2
-#train_dataloader = DataLoader(train_set, batch_size=32, num_workers=0, shuffle=True, collate_fn=collate_batch,)
-
 #model.to(device)
 model.train()
 
@@ -168,13 +163,12 @@ learning_rate = 5e-5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epoch = 20
+epoch = 50
 Sneg = -1e18
 
     
 print ("start")
 for epoch in range(epoch):
-    model.train()
     log_interval = 200
     for batch_idx, samples in enumerate(tqdm(train_dataloader)):
         optimizer.zero_grad()
@@ -199,26 +193,8 @@ for epoch in range(epoch):
 print ("end")
 
 #모델 저장
-PATH = './save/chatbot_v4.pt'
+PATH = './save/chatbot_v50.pt'
 torch.save(model, PATH)
 
 
-with torch.no_grad():
-    while 1:
-        q = input("user > ").strip()
-        if q == "quit":
-            break
-        a = ""
-        while 1:
-            input_ids = torch.LongTensor(tokenizer.encode(Q_TKN + q + SENT + A_TKN + a)).unsqueeze(dim=0)
-            pred = model(input_ids)
-            pred = pred.logits
-            gen = tokenizer.convert_ids_to_tokens(torch.argmax(pred, dim=-1).squeeze().numpy().tolist())[-1]
-            if gen == EOS:
-                break
-            a += gen.replace("▁", " ")
-        print("mibot > {}".format(a.strip()))
 
-
-if __name__ == '__main__':
-    torch.no_grad()
