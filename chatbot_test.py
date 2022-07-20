@@ -17,8 +17,10 @@ tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
     bos_token=BOS, eos_token=EOS, unk_token='<unk>',  pad_token=PAD, mask_token=MASK)
 
 #모델 불러오기
-PATH = './save/chatbot_v1.pt'
-model = torch.load(PATH)
+device = torch.device('cpu')
+PATH = './save/chatbot_v3.pt'
+model = torch.load(PATH, map_location=device)
+
 model.eval()
 
 with torch.no_grad():
