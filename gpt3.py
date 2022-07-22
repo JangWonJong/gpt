@@ -48,9 +48,12 @@ PAD = '<pad>'
 
 tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
          bos_token=BOS, eos_token=EOS, unk_token='<unk>',  pad_token=PAD, mask_token=MASK) 
+
+#프리트레인 모델 불러오기
 #model = GPT2LMHeadModel.from_pretrained('skt/kogpt2-base-v2').to(device)
 
-PATH = './save/chatbot_v3.pt'
+#내가 만든 모델 로드해서 학습
+PATH = './save/chatbot_v50.pt'
 model = torch.load(PATH)
 
 # 챗봇 데이터를 처리하는 클래스를 만든다.
@@ -131,7 +134,7 @@ def collate_batch(batch):
 train_set = ChatbotDataset(Chatbot_Data, max_len=40)
 
 #윈도우 환경에서 num_workers 는 무조건 0으로 지정, 리눅스에서는 2
-train_dataloader = DataLoader(train_set, batch_size=32, num_workers=0, shuffle=True, collate_fn=collate_batch,)
+train_dataloader = DataLoader(train_set, batch_size=64, num_workers=0, shuffle=True, collate_fn=collate_batch,)
 
 print("start")
 for batch_idx, samples in enumerate(tqdm(train_dataloader)):
@@ -163,7 +166,7 @@ learning_rate = 5e-5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-epoch = 50
+epoch = 10
 Sneg = -1e18
 
     
@@ -193,7 +196,7 @@ for epoch in range(epoch):
 print ("end")
 
 #모델 저장
-PATH = './save/chatbot_v50.pt'
+PATH = './save/test.pt'
 torch.save(model, PATH)
 
 

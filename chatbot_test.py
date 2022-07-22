@@ -18,7 +18,7 @@ tokenizer = PreTrainedTokenizerFast.from_pretrained("skt/kogpt2-base-v2",
 
 #모델 불러오기
 device = torch.device('cpu')
-PATH = './save/chatbot_v1.pt'
+PATH = './save/chatbot_v3.pt'
 model = torch.load(PATH, map_location=device)
 
 model.eval()
